@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardCompare - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>CardCompare</h1>
+      <p class="tagline">Privacy-first credit card portfolio management</p>
+    </header>
+
+    <nav class="options-nav">
+      <button class="nav-btn active" data-section="cards">Cards</button>
+      <button class="nav-btn" data-section="calculator">Calculator</button>
+      <button class="nav-btn" data-section="settings">Settings</button>
+    </nav>
+
+    <main class="options-main">
+      <!-- Cards Section -->
+      <section id="cards-section" class="section active">
+        <div class="section-header">
+          <h2>Your Cards</h2>
+          <button id="add-card-btn" class="btn-primary">+ Add Card</button>
+        </div>
+
+        <div id="cards-list" class="cards-list">
+          <div class="loading">Loading cards...</div>
+        </div>
+
+        <div id="no-cards" class="empty-state hidden">
+          <div class="empty-icon">💳</div>
+          <h3>No cards added yet</h3>
+          <p>Add your first credit card to start tracking rewards and optimizing your portfolio.</p>
+          <button id="add-first-card-btn" class="btn-primary">Add Your First Card</button>
+        </div>
+      </section>
+
+      <!-- Calculator Section (Phase 2) -->
+      <section id="calculator-section" class="section hidden">
+        <h2>Rewards Calculator</h2>
+        <p class="coming-soon">Coming in Phase 2</p>
+      </section>
+
+      <!-- Settings Section -->
+      <section id="settings-section" class="section hidden">
+        <h2>Settings</h2>
+
+        <div class="settings-group">
+          <h3>Data Management</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Export Data</span>
+              <span class="setting-desc">Download an encrypted backup of all your cards and data</span>
+            </div>
+            <button id="export-btn" class="btn-secondary">Export</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Import Data</span>
+              <span class="setting-desc">Restore from an encrypted backup file</span>
+            </div>
+            <button id="import-btn" class="btn-secondary">Import</button>
+          </div>
+          <div class="setting-row danger">
+            <div class="setting-info">
+              <span class="setting-label">Clear All Data</span>
+              <span class="setting-desc">Permanently delete all cards and spending data</span>
+            </div>
+            <button id="clear-btn" class="btn-danger">Clear Data</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>About</h3>
+          <div class="about-info">
+            <p><strong>CardCompare</strong> v0.1.0</p>
+            <p>Privacy-first. All data stored locally on your device. Zero telemetry.</p>
+            <p class="security-note">⚠️ This extension only stores the last 4 digits of your card numbers. Full card numbers are never stored.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Card Form Modal -->
+    <div id="card-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add Card</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form id="card-form" class="card-form">
+          <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nickname">Nickname *</label>
+                <input type="text" id="nickname" name="nickname" required maxlength="50" placeholder="e.g., Primary Travel Card">
+              </div>
+              <div class="form-group">
+                <label for="productName">Product Name *</label>
+                <input type="text" id="productName" name="productName" required maxlength="100" placeholder="e.g., Chase Sapphire Preferred">
+              </div>
+              <div class="form-group">
+                <label for="issuer">Issuer *</label>
+                <select id="issuer" name="issuer" required>
+                  <option value="">Select issuer...</option>
+                  <option value="chase">Chase</option>
+                  <option value="amex">American Express</option>
+                  <option value="citi">Citi</option>
+                  <option value="capital_one">Capital One</option>
+                  <option value="boa">Bank of America</option>
+                  <option value="discover">Discover</option>
+                  <option value="wells_fargo">Wells Fargo</option>
+                  <option value="us_bank">US Bank</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="network">Network *</label>
+                <select id="network" name="network" required>
+                  <option value="">Select network...</option>
+                  <option value="visa">Visa</option>
+                  <option value="mastercard">Mastercard</option>
+                  <option value="amex">American Express</option>
+                  <option value="discover">Discover</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="last4">Last 4 Digits *</label>
+                <input type="text" id="last4" name="last4" required pattern="\d{4}" maxlength="4" placeholder="1234">
+                <span class="form-hint">Only the last 4 digits for identification</span>
+              </div>
+              <div class="form-group">
+                <label for="openedOn">Opened On *</label>
+                <input type="date" id="openedOn" name="openedOn" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Fees & APR</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="annualFee">Annual Fee ($) *</label>
+                <input type="number" id="annualFee" name="annualFee" required min="0" step="1" value="0">
+              </div>
+              <div class="form-group">
+                <label for="aprPurchase">Purchase APR (%) *</label>
+                <input type="number" id="aprPurchase" name="aprPurchase" required min="0" step="0.01" placeholder="24.99">
+              </div>
+              <div class="form-group">
+                <label for="foreignTxFee">Foreign Transaction Fee (%) *</label>
+                <input type="number" id="foreignTxFee" name="foreignTxFee" required min="0" max="100" step="0.1" value="0">
+              </div>
+              <div class="form-group">
+                <label for="creditLimit">Credit Limit ($)</label>
+                <input type="number" id="creditLimit" name="creditLimit" min="0" step="100" placeholder="10000">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Statement & Due Dates</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="statementDay">Statement Day</label>
+                <input type="number" id="statementDay" name="statementDay" min="1" max="28" placeholder="15">
+                <span class="form-hint">Day of month (1-28)</span>
+              </div>
+              <div class="form-group">
+                <label for="dueDay">Due Day</label>
+                <input type="number" id="dueDay" name="dueDay" min="1" max="28" placeholder="10">
+                <span class="form-hint">Day of month (1-28)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Rewards</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="pointType">Rewards Type *</label>
+                <select id="pointType" name="pointType" required>
+                  <option value="cashback">Cash Back</option>
+                  <option value="ur">Chase Ultimate Rewards</option>
+                  <option value="mr">Amex Membership Rewards</option>
+                  <option value="thankyou">Citi ThankYou Points</option>
+                  <option value="venture">Capital One Miles</option>
+                  <option value="other">Other Points</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="baseRate">Base Earn Rate (%) *</label>
+                <input type="number" id="baseRate" name="baseRate" required min="0" step="0.1" value="1" placeholder="1">
+                <span class="form-hint">e.g., 1 for 1% back or 1x points</span>
+              </div>
+              <div class="form-group">
+                <label for="pointValue">Point Value (cpp) *</label>
+                <input type="number" id="pointValue" name="pointValue" required min="0" step="0.01" value="1" placeholder="1">
+                <span class="form-hint">Cents per point (1 for cash back)</span>
+              </div>
+            </div>
+
+            <div class="category-rewards">
+              <label>Category Bonuses</label>
+              <div id="category-rewards-list" class="category-list"></div>
+              <button type="button" id="add-category-btn" class="btn-secondary btn-sm">+ Add Category</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Notes</h3>
+            <div class="form-group">
+              <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Any additional notes about this card..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">Save Card</button>
+          </div>
+
+          <input type="hidden" id="cardId" name="cardId">
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Delete Card</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong id="delete-card-name"></strong>?</p>
+          <p class="text-muted">This will also delete all spending entries for this card. This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary modal-cancel">Cancel</button>
+          <button id="confirm-delete-btn" class="btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear Data Confirmation Modal -->
+    <div id="clear-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Clear All Data</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong>all</strong> your data?</p>
+          <p class="text-muted">This will permanently delete all cards, spending entries, and hard inquiries. This action cannot be undone.</p>
+          <p class="text-muted">Consider exporting a backup first.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary modal-cancel">Cancel</button>
+          <button id="confirm-clear-btn" class="btn-danger">Delete Everything</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="options.ts"></script>
+</body>
+</html>

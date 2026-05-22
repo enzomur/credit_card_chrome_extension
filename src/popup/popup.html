@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardCompare</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>CardCompare</h1>
+      <button id="open-options" class="icon-btn" title="Settings">⚙</button>
+    </header>
+
+    <main class="popup-main">
+      <div id="cards-summary" class="cards-summary">
+        <div class="loading">Loading cards...</div>
+      </div>
+
+      <div id="empty-state" class="empty-state hidden">
+        <p>No cards added yet.</p>
+        <button id="add-first-card" class="btn-primary">Add Your First Card</button>
+      </div>
+    </main>
+
+    <footer class="popup-footer">
+      <span id="card-count">0 cards</span>
+      <button id="quick-compare" class="btn-secondary" disabled>Compare</button>
+    </footer>
+  </div>
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>
