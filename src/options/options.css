@@ -590,3 +590,607 @@ body {
   color: #888;
   font-style: italic;
 }
+
+/* Calculator Section */
+.calculator-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.calc-input-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.calc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.calc-results-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.calc-results-section h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.calc-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calc-placeholder {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.calc-result-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.calc-result-card.rank-1 {
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+  border-left-color: #27ae60;
+}
+
+.calc-result-card.rank-2 {
+  border-left-color: #3498db;
+}
+
+.calc-result-card.rank-3 {
+  border-left-color: #9b59b6;
+}
+
+.calc-rank {
+  font-size: 24px;
+  font-weight: 700;
+  color: #888;
+  width: 40px;
+  text-align: center;
+}
+
+.rank-1 .calc-rank {
+  color: #27ae60;
+}
+
+.calc-card-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+}
+
+.calc-card-details {
+  font-size: 13px;
+  color: #666;
+}
+
+.calc-earn {
+  text-align: right;
+}
+
+.calc-earn-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+.calc-earn-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.calc-earn-transfer {
+  font-size: 11px;
+  color: #3498db;
+  margin-top: 4px;
+}
+
+/* Calculator Result Items */
+.calc-result-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #888;
+}
+
+.calc-result-item.best {
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+  border-left-color: #27ae60;
+}
+
+.calc-rank {
+  font-size: 20px;
+  font-weight: 700;
+  color: #888;
+  text-align: center;
+}
+
+.calc-result-item.best .calc-rank {
+  color: #27ae60;
+}
+
+.calc-result-info {
+  min-width: 0;
+}
+
+.calc-card-name {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.calc-card-details {
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rotating-badge {
+  background: #9b59b6;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.calc-result-value {
+  text-align: right;
+}
+
+.calc-points {
+  font-size: 14px;
+  color: #666;
+}
+
+.calc-cash {
+  font-size: 18px;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+.calc-transfer {
+  font-size: 11px;
+  color: #3498db;
+}
+
+/* Bonus Item Styles */
+.bonus-item {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #f39c12;
+}
+
+.bonus-item.complete {
+  border-left-color: #27ae60;
+  background: #f0fff4;
+}
+
+.bonus-item.expired {
+  border-left-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.bonus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bonus-card-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.bonus-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bonus-status.complete {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bonus-status.expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bonus-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.bonus-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.bonus-item.complete .bonus-progress-fill {
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.bonus-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Bonus Tracker */
+.bonus-tracker-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.bonus-tracker-section h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.bonus-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bonus-card {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #f39c12;
+}
+
+.bonus-card.completed {
+  border-left-color: #27ae60;
+  background: #f0fff4;
+}
+
+.bonus-card.expired {
+  border-left-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.bonus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bonus-card-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.bonus-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #fff3cd;
+  color: #856404;
+}
+
+.bonus-status.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.bonus-status.expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.bonus-progress {
+  margin-bottom: 8px;
+}
+
+.bonus-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bonus-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.bonus-card.completed .bonus-progress-fill {
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.bonus-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+}
+
+.bonus-amount {
+  font-weight: 600;
+}
+
+/* Transfer Partners */
+.transfer-partners {
+  margin-top: 16px;
+}
+
+.transfer-partners > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.partner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.partner-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.partner-row input {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.partner-remove {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+/* Eligibility Section */
+.section-desc {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.eligibility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.eligibility-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #888;
+  transition: box-shadow 0.2s;
+}
+
+.eligibility-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.eligibility-card.eligible {
+  border-left-color: #27ae60;
+}
+
+.eligibility-card.ineligible {
+  border-left-color: #e74c3c;
+}
+
+.eligibility-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.issuer-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.eligibility-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: #e0e0e0;
+  color: #666;
+}
+
+.eligibility-badge.eligible {
+  background: #d4edda;
+  color: #155724;
+}
+
+.eligibility-badge.ineligible {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.eligibility-rule {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.eligibility-status {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.eligibility-detail {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* Inquiries Section */
+.inquiries-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.inquiries-section .section-header {
+  margin-bottom: 8px;
+}
+
+.inquiries-section .section-desc {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.inquiries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inquiry-item {
+  display: grid;
+  grid-template-columns: 100px 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.inquiry-date {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.inquiry-info {
+  min-width: 0;
+}
+
+.inquiry-issuer {
+  font-weight: 500;
+}
+
+.inquiry-product {
+  font-size: 13px;
+  color: #666;
+}
+
+.inquiry-bureau {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.inquiry-bureau.experian { background: #e3f2fd; color: #1565c0; }
+.inquiry-bureau.equifax { background: #fce4ec; color: #c62828; }
+.inquiry-bureau.transunion { background: #e8f5e9; color: #2e7d32; }
+
+.inquiry-delete {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 16px;
+}
+
+.inquiry-delete:hover {
+  color: #e74c3c;
+}
+
+.inquiry-age {
+  font-size: 12px;
+  color: #888;
+}
+
+.inquiry-age.expiring-soon {
+  color: #f39c12;
+}
+
+.inquiry-age.expired {
+  color: #27ae60;
+}
+
+.empty-state-small {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calculator-container {
+    grid-template-columns: 1fr;
+  }
+
+  .eligibility-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inquiry-item {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .inquiry-date {
+    grid-column: 1 / -1;
+  }
+}

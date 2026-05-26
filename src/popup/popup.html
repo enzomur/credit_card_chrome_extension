@@ -10,14 +10,46 @@
   <div class="popup-container">
     <header class="popup-header">
       <h1>CardCompare</h1>
-      <button id="open-options" class="icon-btn" title="Settings">⚙</button>
+      <button id="open-options" class="icon-btn" title="Settings">&#9881;</button>
     </header>
 
     <main class="popup-main">
-      <div id="cards-summary" class="cards-summary">
-        <div class="loading">Loading cards...</div>
+      <!-- Quick Compare Section -->
+      <div id="quick-compare-section" class="quick-compare-section">
+        <label for="category-select">Best card for:</label>
+        <select id="category-select">
+          <option value="dining">Dining</option>
+          <option value="grocery">Grocery</option>
+          <option value="gas">Gas</option>
+          <option value="travel_flights">Flights</option>
+          <option value="travel_hotels">Hotels</option>
+          <option value="travel_other">Other Travel</option>
+          <option value="transit">Transit</option>
+          <option value="streaming">Streaming</option>
+          <option value="online_retail">Online Shopping</option>
+          <option value="drugstore">Drugstore</option>
+          <option value="utilities">Utilities</option>
+          <option value="wholesale_club">Wholesale Club</option>
+          <option value="other">Other/General</option>
+        </select>
+
+        <div id="best-card-result" class="best-card-result">
+          <div class="best-card-placeholder">Select a category to see the best card</div>
+        </div>
       </div>
 
+      <!-- Cards List -->
+      <div class="cards-section">
+        <div class="cards-section-header">
+          <span>Your Cards</span>
+          <span id="card-count" class="card-count">0</span>
+        </div>
+        <div id="cards-summary" class="cards-summary">
+          <div class="loading">Loading cards...</div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
       <div id="empty-state" class="empty-state hidden">
         <p>No cards added yet.</p>
         <button id="add-first-card" class="btn-primary">Add Your First Card</button>
@@ -25,8 +57,7 @@
     </main>
 
     <footer class="popup-footer">
-      <span id="card-count">0 cards</span>
-      <button id="quick-compare" class="btn-secondary" disabled>Compare</button>
+      <button id="open-full-calculator" class="btn-secondary">Full Calculator</button>
     </footer>
   </div>
   <script type="module" src="popup.ts"></script>

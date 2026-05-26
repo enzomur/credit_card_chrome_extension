@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && npm run copy-assets",
+    "copy-assets": "cp manifest.json dist/ && cp -r icons dist/ && mv dist/src/popup/popup.html dist/ && mv dist/src/options/options.html dist/ && rm -rf dist/src",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts",

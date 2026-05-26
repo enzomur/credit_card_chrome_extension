@@ -11,14 +11,14 @@ body {
   color: #1a1a2e;
   background: #f8f9fa;
   width: 360px;
-  min-height: 400px;
+  min-height: 420px;
 }
 
 .popup-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 400px;
+  min-height: 420px;
 }
 
 .popup-header {
@@ -52,32 +52,161 @@ body {
 
 .popup-main {
   flex: 1;
-  padding: 16px;
+  padding: 12px;
   overflow-y: auto;
+}
+
+/* Quick Compare Section */
+.quick-compare-section {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.quick-compare-section label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.quick-compare-section select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.quick-compare-section select:focus {
+  outline: none;
+  border-color: #1a1a2e;
+}
+
+.best-card-result {
+  min-height: 60px;
+}
+
+.best-card-placeholder {
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+}
+
+.best-card-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.best-card-icon {
+  font-size: 24px;
+}
+
+.best-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.best-card-name {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.best-card-details {
+  font-size: 12px;
+  color: #666;
+}
+
+.best-card-rate {
+  text-align: right;
+}
+
+.best-card-rate-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+.best-card-rate-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.no-card-message {
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+}
+
+/* Cards Section */
+.cards-section {
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.cards-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.card-count {
+  background: #e0e0e0;
+  color: #666;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
 }
 
 .cards-summary {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .card-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
   align-items: center;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.1s;
+  transition: background 0.2s;
 }
 
 .card-row:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+  background: #eee;
 }
 
 .card-info {
@@ -85,7 +214,8 @@ body {
 }
 
 .card-nickname {
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 13px;
   color: #1a1a2e;
   white-space: nowrap;
   overflow: hidden;
@@ -93,43 +223,33 @@ body {
 }
 
 .card-details {
-  font-size: 12px;
-  color: #666;
+  font-size: 11px;
+  color: #888;
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  align-items: center;
 }
 
 .card-last4 {
   font-family: monospace;
 }
 
-.card-fee {
+.card-rate {
   text-align: right;
   font-size: 12px;
-  color: #666;
 }
 
-.card-fee-amount {
+.card-rate-value {
   font-weight: 600;
-  color: #1a1a2e;
+  color: #27ae60;
 }
 
-.card-due {
-  text-align: right;
-  font-size: 11px;
-  min-width: 70px;
+.card-rate-label {
+  font-size: 10px;
+  color: #888;
 }
 
-.card-due.soon {
-  color: #e67e22;
-  font-weight: 600;
-}
-
-.card-due.overdue {
-  color: #e74c3c;
-  font-weight: 600;
-}
-
+/* Empty state */
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -147,9 +267,11 @@ body {
 .loading {
   text-align: center;
   color: #666;
-  padding: 40px;
+  padding: 20px;
+  font-size: 13px;
 }
 
+/* Buttons */
 .btn-primary {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: white;
@@ -176,6 +298,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
+  width: 100%;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -188,25 +311,17 @@ body {
 }
 
 .popup-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
+  padding: 12px;
   border-top: 1px solid #eee;
   background: white;
-}
-
-#card-count {
-  font-size: 12px;
-  color: #666;
 }
 
 /* Network badges */
 .network-badge {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -226,3 +341,15 @@ body {
 .issuer-wells_fargo { border-left: 3px solid #d71e28; }
 .issuer-us_bank { border-left: 3px solid #0c2340; }
 .issuer-other { border-left: 3px solid #666; }
+
+/* Rotating badge */
+.rotating-badge {
+  background: #9b59b6;
+  color: white;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-left: 4px;
+}

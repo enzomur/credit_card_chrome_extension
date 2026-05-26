@@ -6,12 +6,25 @@ import {
   clearAllData,
   exportAllData,
   importAllData,
+  getAllHardInquiries,
+  addHardInquiry,
+  deleteHardInquiry,
 } from '@/lib/storage';
 import {
   validateCard,
   sanitizeForDisplay,
   containsFullCardNumber,
 } from '@/lib/validators';
+import {
+  compareCardsForPurchase,
+  getSignupBonusProgress,
+} from '@/lib/rewards';
+import {
+  checkChase524,
+  checkAmex290,
+  checkCiti865,
+  checkBoA234,
+} from '@/lib/eligibility';
 import type {
   Card,
   CardInput,
@@ -20,11 +33,16 @@ import type {
   Issuer,
   Network,
   PointType,
+  TransferPartner,
+  HardInquiry,
+  HardInquiryInput,
+  Bureau,
 } from '@/types';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
   NETWORK_LABELS,
+  ISSUER_LABELS,
 } from '@/types';
 
 // DOM element references
@@ -35,11 +53,23 @@ let cardForm: HTMLFormElement | null = null;
 let cardsList: HTMLElement | null = null;
 let noCards: HTMLElement | null = null;
 let categoryRewardsList: HTMLElement | null = null;
+let transferPartnersList: HTMLElement | null = null;
+let calcResults: HTMLElement | null = null;
+let bonusTracker: HTMLElement | null = null;
+let inquiryModal: HTMLElement | null = null;
+let deleteInquiryModal: HTMLElement | null = null;
+let inquiryForm: HTMLFormElement | null = null;
+let inquiriesList: HTMLElement | null = null;
+let noInquiries: HTMLElement | null = null;
 
 // Current state
 let editingCardId: string | null = null;
 let deletingCardId: string | null = null;
+let deletingInquiryId: string | null = null;
 let categoryRewards: CategoryReward[] = [];
+let transferPartners: TransferPartner[] = [];
+let allCards: Card[] = [];
+let allInquiries: HardInquiry[] = [];
 
 async function init(): Promise<void> {
   // Get DOM references
@@ -50,13 +80,26 @@ async function init(): Promise<void> {
   cardsList = document.getElementById('cards-list');
   noCards = document.getElementById('no-cards');
   categoryRewardsList = document.getElementById('category-rewards-list');
+  transferPartnersList = document.getElementById('transfer-partners-list');
+  calcResults = document.getElementById('calc-results');
+  bonusTracker = document.getElementById('bonus-tracker');
+  inquiryModal = document.getElementById('inquiry-modal');
+  deleteInquiryModal = document.getElementById('delete-inquiry-modal');
+  inquiryForm = document.getElementById('inquiry-form') as HTMLFormElement | null;
+  inquiriesList = document.getElementById('inquiries-list');
+  noInquiries = document.getElementById('no-inquiries');
 
   setupNavigation();
   setupModals();
   setupCardForm();
   setupSettings();
+  setupCalculator();
+  setupInquiries();
 
   await loadCards();
+  await loadInquiries();
+  renderBonusTracker();
+  renderEligibility();
 }
 
 function setupNavigation(): void {
@@ -119,6 +162,11 @@ function setupCardForm(): void {
     addCategoryRow();
   });
 
+  // Add transfer partner button
+  document.getElementById('add-partner-btn')?.addEventListener('click', () => {
+    addTransferPartnerRow();
+  });
+
   // Form submission
   cardForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -146,6 +194,184 @@ function setupCardForm(): void {
   });
 }
 
+function setupCalculator(): void {
+  document.getElementById('calc-compare-btn')?.addEventListener('click', () => {
+    runCalculatorComparison();
+  });
+}
+
+function setupInquiries(): void {
+  // Add inquiry button
+  document.getElementById('add-inquiry-btn')?.addEventListener('click', () => {
+    openInquiryModal();
+  });
+
+  // Inquiry form submission
+  inquiryForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    void saveInquiry();
+  });
+
+  // Delete inquiry confirmation
+  document.getElementById('confirm-delete-inquiry-btn')?.addEventListener('click', () => {
+    void confirmDeleteInquiry();
+  });
+}
+
+function openInquiryModal(): void {
+  if (inquiryModal === null || inquiryForm === null) return;
+  inquiryForm.reset();
+  inquiryModal.classList.remove('hidden');
+}
+
+async function saveInquiry(): Promise<void> {
+  if (inquiryForm === null) return;
+
+  const formData = new FormData(inquiryForm);
+
+  const input: HardInquiryInput = {
+    bureau: formData.get('bureau') as Bureau,
+    issuer: formData.get('issuer') as Issuer,
+    date: formData.get('date') as string,
+  };
+
+  const productName = (formData.get('productName') as string).trim();
+  if (productName !== '') {
+    input.productName = productName;
+  }
+
+  try {
+    await addHardInquiry(input);
+    closeAllModals();
+    await loadInquiries();
+    renderEligibility();
+  } catch (error) {
+    console.error('Error saving inquiry:', error);
+    alert('Error saving inquiry. Please try again.');
+  }
+}
+
+function openDeleteInquiryModal(id: string): void {
+  if (deleteInquiryModal === null) return;
+  deletingInquiryId = id;
+  deleteInquiryModal.classList.remove('hidden');
+}
+
+async function confirmDeleteInquiry(): Promise<void> {
+  if (deletingInquiryId === null) return;
+
+  try {
+    await deleteHardInquiry(deletingInquiryId);
+    deletingInquiryId = null;
+    closeAllModals();
+    await loadInquiries();
+    renderEligibility();
+  } catch (error) {
+    console.error('Error deleting inquiry:', error);
+    alert('Error deleting inquiry. Please try again.');
+  }
+}
+
+async function loadInquiries(): Promise<void> {
+  if (inquiriesList === null || noInquiries === null) return;
+
+  try {
+    const inquiries = await getAllHardInquiries();
+    allInquiries = inquiries;
+
+    if (inquiries.length === 0) {
+      inquiriesList.classList.add('hidden');
+      noInquiries.classList.remove('hidden');
+      return;
+    }
+
+    noInquiries.classList.add('hidden');
+    inquiriesList.classList.remove('hidden');
+
+    // Sort by date descending
+    const sortedInquiries = [...inquiries].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    while (inquiriesList.firstChild !== null) {
+      inquiriesList.removeChild(inquiriesList.firstChild);
+    }
+
+    for (const inquiry of sortedInquiries) {
+      inquiriesList.appendChild(createInquiryItem(inquiry));
+    }
+  } catch (error) {
+    console.error('Error loading inquiries:', error);
+  }
+}
+
+function createInquiryItem(inquiry: HardInquiry): HTMLElement {
+  const item = document.createElement('div');
+  item.className = 'inquiry-item';
+
+  // Date
+  const dateDiv = document.createElement('div');
+  dateDiv.className = 'inquiry-date';
+  const date = new Date(inquiry.date);
+  dateDiv.textContent = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // Info
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'inquiry-info';
+
+  const issuerDiv = document.createElement('div');
+  issuerDiv.className = 'inquiry-issuer';
+  issuerDiv.textContent = ISSUER_LABELS[inquiry.issuer];
+
+  infoDiv.appendChild(issuerDiv);
+
+  if (inquiry.productName !== undefined) {
+    const productDiv = document.createElement('div');
+    productDiv.className = 'inquiry-product';
+    productDiv.textContent = inquiry.productName;
+    infoDiv.appendChild(productDiv);
+  }
+
+  // Bureau badge
+  const bureauSpan = document.createElement('span');
+  bureauSpan.className = `inquiry-bureau ${inquiry.bureau}`;
+  bureauSpan.textContent = inquiry.bureau;
+
+  // Age / expiry info
+  const ageDiv = document.createElement('div');
+  ageDiv.className = 'inquiry-age';
+  const daysSince = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const daysUntilExpiry = 730 - daysSince; // 2 years = 730 days
+
+  if (daysUntilExpiry <= 0) {
+    ageDiv.textContent = 'Fallen off';
+    ageDiv.classList.add('expired');
+  } else if (daysUntilExpiry <= 90) {
+    ageDiv.textContent = `${daysUntilExpiry}d until off`;
+    ageDiv.classList.add('expiring-soon');
+  } else {
+    const monthsRemaining = Math.floor(daysUntilExpiry / 30);
+    ageDiv.textContent = `${monthsRemaining}mo remaining`;
+  }
+
+  // Delete button
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'inquiry-delete';
+  deleteBtn.textContent = '×';
+  deleteBtn.title = 'Delete';
+  deleteBtn.addEventListener('click', () => {
+    openDeleteInquiryModal(inquiry.id);
+  });
+
+  item.appendChild(dateDiv);
+  item.appendChild(infoDiv);
+  item.appendChild(bureauSpan);
+  item.appendChild(ageDiv);
+  item.appendChild(deleteBtn);
+
+  return item;
+}
+
 function setupSettings(): void {
   document.getElementById('export-btn')?.addEventListener('click', () => {
     void handleExport();
@@ -165,6 +391,20 @@ async function loadCards(): Promise<void> {
 
   try {
     const cards = await getAllCards();
+    allCards = cards; // Store for calculator use
+
+    // Update calculator state
+    const calcNoCards = document.getElementById('calc-no-cards');
+    const calcContainer = document.querySelector('.calculator-container') as HTMLElement | null;
+    if (calcNoCards !== null && calcContainer !== null) {
+      if (cards.length === 0) {
+        calcNoCards.classList.remove('hidden');
+        calcContainer.classList.add('hidden');
+      } else {
+        calcNoCards.classList.add('hidden');
+        calcContainer.classList.remove('hidden');
+      }
+    }
 
     if (cards.length === 0) {
       cardsList.classList.add('hidden');
@@ -292,6 +532,7 @@ function openCardModal(card?: Card): void {
 
   editingCardId = card?.id ?? null;
   categoryRewards = card?.rewards.categories ? [...card.rewards.categories] : [];
+  transferPartners = card?.rewards.transferPartners ? [...card.rewards.transferPartners] : [];
 
   // Update title
   const title = document.getElementById('modal-title');
@@ -328,13 +569,22 @@ function openCardModal(card?: Card): void {
     (document.getElementById('baseRate') as HTMLInputElement).value = String(card.rewards.baseRate * 100);
     (document.getElementById('pointValue') as HTMLInputElement).value = String(card.rewards.pointValue);
 
+    // Signup bonus fields
+    if (card.signupBonus !== undefined) {
+      (document.getElementById('bonusAmount') as HTMLInputElement).value = String(card.signupBonus.amount);
+      (document.getElementById('bonusMinSpend') as HTMLInputElement).value = String(card.signupBonus.minSpend);
+      (document.getElementById('bonusDeadline') as HTMLInputElement).value = card.signupBonus.deadline;
+      (document.getElementById('bonusSpentToDate') as HTMLInputElement).value = String(card.signupBonus.spendToDate);
+    }
+
     if (card.notes !== undefined) {
       (document.getElementById('notes') as HTMLTextAreaElement).value = card.notes;
     }
   }
 
-  // Render category rewards
+  // Render category rewards and transfer partners
   renderCategoryRewards();
+  renderTransferPartners();
 
   cardModal.classList.remove('hidden');
 }
@@ -437,6 +687,98 @@ function addCategoryRow(): void {
   renderCategoryRewards();
 }
 
+function renderTransferPartners(): void {
+  if (transferPartnersList === null) return;
+
+  while (transferPartnersList.firstChild !== null) {
+    transferPartnersList.removeChild(transferPartnersList.firstChild);
+  }
+
+  for (let i = 0; i < transferPartners.length; i++) {
+    const partner = transferPartners[i];
+    if (partner === undefined) continue;
+
+    const row = document.createElement('div');
+    row.className = 'partner-row';
+
+    // Partner name input
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = partner.partner;
+    nameInput.placeholder = 'Partner name';
+    nameInput.dataset['index'] = String(i);
+    nameInput.addEventListener('change', (e) => {
+      const idx = parseInt((e.target as HTMLInputElement).dataset['index'] ?? '0', 10);
+      const item = transferPartners[idx];
+      if (item !== undefined) {
+        item.partner = (e.target as HTMLInputElement).value;
+      }
+    });
+
+    // Ratio input
+    const ratioInput = document.createElement('input');
+    ratioInput.type = 'number';
+    ratioInput.min = '0';
+    ratioInput.step = '0.1';
+    ratioInput.value = String(partner.ratio);
+    ratioInput.placeholder = 'Ratio';
+    ratioInput.title = 'Transfer ratio (e.g., 1 = 1:1)';
+    ratioInput.dataset['index'] = String(i);
+    ratioInput.addEventListener('change', (e) => {
+      const idx = parseInt((e.target as HTMLInputElement).dataset['index'] ?? '0', 10);
+      const item = transferPartners[idx];
+      if (item !== undefined) {
+        item.ratio = parseFloat((e.target as HTMLInputElement).value) || 1;
+      }
+    });
+
+    // Valuation input
+    const valInput = document.createElement('input');
+    valInput.type = 'number';
+    valInput.min = '0';
+    valInput.step = '0.1';
+    valInput.value = String(partner.valuationCpp);
+    valInput.placeholder = 'cpp';
+    valInput.title = 'Cents per point valuation';
+    valInput.dataset['index'] = String(i);
+    valInput.addEventListener('change', (e) => {
+      const idx = parseInt((e.target as HTMLInputElement).dataset['index'] ?? '0', 10);
+      const item = transferPartners[idx];
+      if (item !== undefined) {
+        item.valuationCpp = parseFloat((e.target as HTMLInputElement).value) || 1;
+      }
+    });
+
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'partner-remove';
+    removeBtn.textContent = '×';
+    removeBtn.dataset['index'] = String(i);
+    removeBtn.addEventListener('click', (e) => {
+      const idx = parseInt((e.target as HTMLButtonElement).dataset['index'] ?? '0', 10);
+      transferPartners.splice(idx, 1);
+      renderTransferPartners();
+    });
+
+    row.appendChild(nameInput);
+    row.appendChild(ratioInput);
+    row.appendChild(valInput);
+    row.appendChild(removeBtn);
+
+    transferPartnersList.appendChild(row);
+  }
+}
+
+function addTransferPartnerRow(): void {
+  transferPartners.push({
+    partner: '',
+    ratio: 1,
+    valuationCpp: 1.5,
+  });
+  renderTransferPartners();
+}
+
 async function saveCard(): Promise<void> {
   if (cardForm === null) return;
 
@@ -446,6 +788,9 @@ async function saveCard(): Promise<void> {
   const creditLimitStr = formData.get('creditLimit') as string;
   const statementDayStr = formData.get('statementDay') as string;
   const dueDayStr = formData.get('dueDay') as string;
+
+  // Filter out invalid transfer partners (empty names)
+  const validPartners = transferPartners.filter((p) => p.partner.trim() !== '');
 
   const cardInput: CardInput = {
     nickname: (formData.get('nickname') as string).trim(),
@@ -465,6 +810,11 @@ async function saveCard(): Promise<void> {
     },
   };
 
+  // Add transfer partners if any
+  if (validPartners.length > 0) {
+    cardInput.rewards.transferPartners = validPartners;
+  }
+
   // Only add optional fields if they have values
   if (creditLimitStr !== '') {
     cardInput.creditLimit = parseFloat(creditLimitStr);
@@ -478,6 +828,21 @@ async function saveCard(): Promise<void> {
   const notesValue = (formData.get('notes') as string).trim();
   if (notesValue !== '') {
     cardInput.notes = notesValue;
+  }
+
+  // Signup bonus
+  const bonusAmountStr = formData.get('bonusAmount') as string;
+  const bonusMinSpendStr = formData.get('bonusMinSpend') as string;
+  const bonusDeadlineStr = formData.get('bonusDeadline') as string;
+  const bonusSpentToDateStr = formData.get('bonusSpentToDate') as string;
+
+  if (bonusAmountStr !== '' && bonusMinSpendStr !== '' && bonusDeadlineStr !== '') {
+    cardInput.signupBonus = {
+      amount: parseFloat(bonusAmountStr) || 0,
+      minSpend: parseFloat(bonusMinSpendStr) || 0,
+      deadline: bonusDeadlineStr,
+      spendToDate: parseFloat(bonusSpentToDateStr) || 0,
+    };
   }
 
   // Validate
@@ -496,6 +861,7 @@ async function saveCard(): Promise<void> {
 
     closeAllModals();
     await loadCards();
+    renderBonusTracker();
   } catch (error) {
     console.error('Error saving card:', error);
     alert('Error saving card. Please try again.');
@@ -544,8 +910,11 @@ function closeAllModals(): void {
   cardModal?.classList.add('hidden');
   deleteModal?.classList.add('hidden');
   clearModal?.classList.add('hidden');
+  inquiryModal?.classList.add('hidden');
+  deleteInquiryModal?.classList.add('hidden');
   editingCardId = null;
   deletingCardId = null;
+  deletingInquiryId = null;
 }
 
 async function handleExport(): Promise<void> {
@@ -602,6 +971,241 @@ function handleImport(): void {
   });
 
   input.click();
+}
+
+function runCalculatorComparison(): void {
+  if (calcResults === null) return;
+
+  const categorySelect = document.getElementById('calc-category') as HTMLSelectElement | null;
+  const amountInput = document.getElementById('calc-amount') as HTMLInputElement | null;
+
+  if (categorySelect === null || amountInput === null) return;
+
+  const category = categorySelect.value as Category;
+  const amount = parseFloat(amountInput.value) || 0;
+
+  if (amount <= 0) {
+    while (calcResults.firstChild !== null) {
+      calcResults.removeChild(calcResults.firstChild);
+    }
+    const placeholder = document.createElement('p');
+    placeholder.className = 'calc-placeholder';
+    placeholder.textContent = 'Enter an amount greater than $0 to compare cards.';
+    calcResults.appendChild(placeholder);
+    return;
+  }
+
+  if (allCards.length === 0) {
+    while (calcResults.firstChild !== null) {
+      calcResults.removeChild(calcResults.firstChild);
+    }
+    const placeholder = document.createElement('p');
+    placeholder.className = 'calc-placeholder';
+    placeholder.textContent = 'Add some cards first to use the calculator.';
+    calcResults.appendChild(placeholder);
+    return;
+  }
+
+  const comparisons = compareCardsForPurchase(allCards, category, amount);
+
+  while (calcResults.firstChild !== null) {
+    calcResults.removeChild(calcResults.firstChild);
+  }
+
+  for (let i = 0; i < comparisons.length; i++) {
+    const comp = comparisons[i];
+    if (comp === undefined) continue;
+
+    const resultItem = document.createElement('div');
+    resultItem.className = 'calc-result-item';
+    if (i === 0) resultItem.classList.add('best');
+
+    const rankDiv = document.createElement('div');
+    rankDiv.className = 'calc-rank';
+    rankDiv.textContent = i === 0 ? '🏆' : String(i + 1);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'calc-result-info';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'calc-card-name';
+    nameDiv.textContent = sanitizeForDisplay(comp.cardNickname);
+
+    const detailsDiv = document.createElement('div');
+    detailsDiv.className = 'calc-card-details';
+
+    const rateSpan = document.createElement('span');
+    rateSpan.textContent = `${(comp.earnRate * 100).toFixed(1)}% earn rate`;
+    if (comp.isRotating) {
+      const rotatingBadge = document.createElement('span');
+      rotatingBadge.className = 'rotating-badge';
+      rotatingBadge.textContent = 'Rotating';
+      detailsDiv.appendChild(rotatingBadge);
+    }
+    detailsDiv.appendChild(rateSpan);
+
+    infoDiv.appendChild(nameDiv);
+    infoDiv.appendChild(detailsDiv);
+
+    const valueDiv = document.createElement('div');
+    valueDiv.className = 'calc-result-value';
+
+    const pointsDiv = document.createElement('div');
+    pointsDiv.className = 'calc-points';
+    pointsDiv.textContent = `${comp.pointsEarned.toFixed(0)} pts`;
+
+    const cashDiv = document.createElement('div');
+    cashDiv.className = 'calc-cash';
+    cashDiv.textContent = `$${comp.bestValue.toFixed(2)} value`;
+
+    if (comp.transferValue !== undefined && comp.transferValue > comp.cashbackValue) {
+      const transferDiv = document.createElement('div');
+      transferDiv.className = 'calc-transfer';
+      transferDiv.textContent = '(via transfer)';
+      valueDiv.appendChild(pointsDiv);
+      valueDiv.appendChild(cashDiv);
+      valueDiv.appendChild(transferDiv);
+    } else {
+      valueDiv.appendChild(pointsDiv);
+      valueDiv.appendChild(cashDiv);
+    }
+
+    resultItem.appendChild(rankDiv);
+    resultItem.appendChild(infoDiv);
+    resultItem.appendChild(valueDiv);
+
+    calcResults.appendChild(resultItem);
+  }
+}
+
+function renderBonusTracker(): void {
+  if (bonusTracker === null) return;
+
+  while (bonusTracker.firstChild !== null) {
+    bonusTracker.removeChild(bonusTracker.firstChild);
+  }
+
+  const cardsWithBonus = allCards.filter((card) => card.signupBonus !== undefined);
+
+  if (cardsWithBonus.length === 0) {
+    const placeholder = document.createElement('p');
+    placeholder.className = 'calc-placeholder';
+    placeholder.textContent = 'Cards with active signup bonuses will appear here.';
+    bonusTracker.appendChild(placeholder);
+    return;
+  }
+
+  for (const card of cardsWithBonus) {
+    const progress = getSignupBonusProgress(card);
+    if (progress === null) continue;
+
+    const bonusItem = document.createElement('div');
+    bonusItem.className = 'bonus-item';
+    if (progress.isComplete) bonusItem.classList.add('complete');
+    if (progress.isExpired) bonusItem.classList.add('expired');
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'bonus-header';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'bonus-card-name';
+    nameSpan.textContent = sanitizeForDisplay(card.nickname);
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'bonus-status';
+    if (progress.isComplete) {
+      statusSpan.textContent = '✅ Complete';
+      statusSpan.classList.add('complete');
+    } else if (progress.isExpired) {
+      statusSpan.textContent = '❌ Expired';
+      statusSpan.classList.add('expired');
+    } else {
+      statusSpan.textContent = `${progress.daysRemaining} days left`;
+    }
+
+    headerDiv.appendChild(nameSpan);
+    headerDiv.appendChild(statusSpan);
+
+    const progressBarDiv = document.createElement('div');
+    progressBarDiv.className = 'bonus-progress-bar';
+
+    const progressFill = document.createElement('div');
+    progressFill.className = 'bonus-progress-fill';
+    progressFill.style.width = `${Math.min(100, progress.percentComplete)}%`;
+
+    progressBarDiv.appendChild(progressFill);
+
+    const detailsDiv = document.createElement('div');
+    detailsDiv.className = 'bonus-details';
+
+    const spentSpan = document.createElement('span');
+    spentSpan.textContent = `$${progress.spendToDate.toLocaleString()} of $${progress.minSpend.toLocaleString()}`;
+
+    const remainingSpan = document.createElement('span');
+    if (!progress.isComplete) {
+      remainingSpan.textContent = `$${progress.amountRemaining.toLocaleString()} to go`;
+    } else {
+      remainingSpan.textContent = `${card.signupBonus?.amount.toLocaleString() ?? 0} points earned`;
+    }
+
+    detailsDiv.appendChild(spentSpan);
+    detailsDiv.appendChild(remainingSpan);
+
+    bonusItem.appendChild(headerDiv);
+    bonusItem.appendChild(progressBarDiv);
+    bonusItem.appendChild(detailsDiv);
+
+    bonusTracker.appendChild(bonusItem);
+  }
+}
+
+function renderEligibility(): void {
+  // Chase 5/24
+  const chaseResult = checkChase524(allCards);
+  updateEligibilityCard('chase', chaseResult.eligible, chaseResult.reason, chaseResult.details);
+
+  // Amex 2/90
+  const amexResult = checkAmex290(allCards);
+  updateEligibilityCard('amex', amexResult.eligible, amexResult.reason, amexResult.details);
+
+  // Citi 8/65
+  const citiResult = checkCiti865(allCards, allInquiries);
+  updateEligibilityCard('citi', citiResult.eligible, citiResult.reason, citiResult.details);
+
+  // BoA 2/3/4
+  const boaResult = checkBoA234(allCards);
+  updateEligibilityCard('boa', boaResult.eligible, boaResult.reason, boaResult.details);
+}
+
+function updateEligibilityCard(
+  issuer: string,
+  eligible: boolean,
+  status: string,
+  detail?: string
+): void {
+  const card = document.querySelector(`.eligibility-card[data-issuer="${issuer}"]`);
+  const badge = document.getElementById(`${issuer}-badge`);
+  const statusEl = document.getElementById(`${issuer}-status`);
+  const detailEl = document.getElementById(`${issuer}-detail`);
+
+  if (card !== null) {
+    card.classList.remove('eligible', 'ineligible');
+    card.classList.add(eligible ? 'eligible' : 'ineligible');
+  }
+
+  if (badge !== null) {
+    badge.classList.remove('eligible', 'ineligible');
+    badge.classList.add(eligible ? 'eligible' : 'ineligible');
+    badge.textContent = eligible ? 'Eligible' : 'Ineligible';
+  }
+
+  if (statusEl !== null) {
+    statusEl.textContent = status;
+  }
+
+  if (detailEl !== null) {
+    detailEl.textContent = detail ?? '';
+  }
 }
 
 // Initialize when DOM is ready

@@ -1,21 +1,29 @@
 import { getAllCards } from '@/lib/storage';
 import { sanitizeForDisplay } from '@/lib/validators';
-import type { Card } from '@/types';
-import { NETWORK_LABELS } from '@/types';
+import { getBestCardForCategory, getEffectiveRate } from '@/lib/rewards';
+import type { Card, Category } from '@/types';
+import { NETWORK_LABELS, CATEGORY_LABELS } from '@/types';
+
+let allCards: Card[] = [];
 
 async function init(): Promise<void> {
   const cardsSummary = document.getElementById('cards-summary');
   const emptyState = document.getElementById('empty-state');
   const cardCount = document.getElementById('card-count');
-  const quickCompare = document.getElementById('quick-compare') as HTMLButtonElement | null;
+  const quickCompareSection = document.getElementById('quick-compare-section');
+  const cardsSection = document.querySelector('.cards-section');
+  const categorySelect = document.getElementById('category-select') as HTMLSelectElement | null;
+  const bestCardResult = document.getElementById('best-card-result');
   const openOptions = document.getElementById('open-options');
   const addFirstCard = document.getElementById('add-first-card');
+  const openFullCalculator = document.getElementById('open-full-calculator');
 
   if (
     cardsSummary === null ||
     emptyState === null ||
     cardCount === null ||
-    quickCompare === null ||
+    categorySelect === null ||
+    bestCardResult === null ||
     openOptions === null
   ) {
     console.error('Required DOM elements not found');
@@ -31,38 +39,59 @@ async function init(): Promise<void> {
     void chrome.runtime.openOptionsPage();
   });
 
+  openFullCalculator?.addEventListener('click', () => {
+    // Open options page and navigate to calculator tab
+    void chrome.runtime.openOptionsPage();
+  });
+
+  // Category select change handler
+  categorySelect.addEventListener('change', () => {
+    updateBestCard(categorySelect.value as Category, bestCardResult);
+  });
+
   // Load and display cards
   try {
     const cards = await getAllCards();
+    allCards = cards;
 
     if (cards.length === 0) {
       cardsSummary.classList.add('hidden');
+      quickCompareSection?.classList.add('hidden');
+      cardsSection?.classList.add('hidden');
       emptyState.classList.remove('hidden');
-      cardCount.textContent = '0 cards';
       return;
     }
 
     emptyState.classList.add('hidden');
+    quickCompareSection?.classList.remove('hidden');
+    cardsSection?.classList.remove('hidden');
     cardsSummary.classList.remove('hidden');
-    cardCount.textContent = `${cards.length} card${cards.length !== 1 ? 's' : ''}`;
-    quickCompare.disabled = cards.length < 2;
+    cardCount.textContent = String(cards.length);
 
-    // Sort by due date (cards with due dates first, then by date)
-    const sortedCards = [...cards].sort((a, b) => {
-      if (a.dueDay !== undefined && b.dueDay !== undefined) {
-        return a.dueDay - b.dueDay;
-      }
-      if (a.dueDay !== undefined) return -1;
-      if (b.dueDay !== undefined) return 1;
-      return a.nickname.localeCompare(b.nickname);
-    });
+    // Initial best card display
+    updateBestCard(categorySelect.value as Category, bestCardResult);
+
+    // Sort by nickname
+    const sortedCards = [...cards].sort((a, b) => a.nickname.localeCompare(b.nickname));
 
     while (cardsSummary.firstChild !== null) {
       cardsSummary.removeChild(cardsSummary.firstChild);
     }
+
     for (const card of sortedCards) {
-      cardsSummary.appendChild(createCardRow(card));
+      cardsSummary.appendChild(createCardRow(card, categorySelect.value as Category));
     }
+
+    // Update card rows when category changes
+    categorySelect.addEventListener('change', () => {
+      const category = categorySelect.value as Category;
+      while (cardsSummary.firstChild !== null) {
+        cardsSummary.removeChild(cardsSummary.firstChild);
+      }
+      for (const card of sortedCards) {
+        cardsSummary.appendChild(createCardRow(card, category));
+      }
+    });
   } catch (error) {
     console.error('Error loading cards:', error);
     while (cardsSummary.firstChild !== null) {
@@ -75,7 +104,79 @@ async function init(): Promise<void> {
   }
 }
 
-function createCardRow(card: Card): HTMLElement {
+function updateBestCard(category: Category, container: HTMLElement): void {
+  while (container.firstChild !== null) {
+    container.removeChild(container.firstChild);
+  }
+
+  if (allCards.length === 0) {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'best-card-placeholder';
+    placeholder.textContent = 'Add cards to see recommendations';
+    container.appendChild(placeholder);
+    return;
+  }
+
+  const bestCard = getBestCardForCategory(allCards, category);
+
+  if (bestCard === undefined) {
+    const noCard = document.createElement('div');
+    noCard.className = 'no-card-message';
+    noCard.textContent = 'No cards found for this category';
+    container.appendChild(noCard);
+    return;
+  }
+
+  const { rate, isRotating } = getEffectiveRate(bestCard, category);
+  const ratePercent = (rate * 100).toFixed(1);
+
+  const display = document.createElement('div');
+  display.className = 'best-card-display';
+
+  const icon = document.createElement('div');
+  icon.className = 'best-card-icon';
+  icon.textContent = '💳';
+
+  const info = document.createElement('div');
+  info.className = 'best-card-info';
+
+  const name = document.createElement('div');
+  name.className = 'best-card-name';
+  name.textContent = sanitizeForDisplay(bestCard.nickname);
+
+  const details = document.createElement('div');
+  details.className = 'best-card-details';
+  let detailText = `Best for ${CATEGORY_LABELS[category]}`;
+  if (isRotating) {
+    detailText += ' (rotating bonus)';
+  }
+  details.textContent = detailText;
+
+  info.appendChild(name);
+  info.appendChild(details);
+
+  const rateDiv = document.createElement('div');
+  rateDiv.className = 'best-card-rate';
+
+  const rateValue = document.createElement('div');
+  rateValue.className = 'best-card-rate-value';
+  rateValue.textContent = `${ratePercent}%`;
+
+  const rateLabel = document.createElement('div');
+  rateLabel.className = 'best-card-rate-label';
+  rateLabel.textContent = 'earn rate';
+
+  rateDiv.appendChild(rateValue);
+  rateDiv.appendChild(rateLabel);
+
+  display.appendChild(icon);
+  display.appendChild(info);
+  display.appendChild(rateDiv);
+
+  container.appendChild(display);
+}
+
+function createCardRow(card: Card, category: Category): HTMLElement {
   const row = document.createElement('div');
   row.className = `card-row issuer-${card.issuer}`;
   row.dataset['cardId'] = card.id;
@@ -101,78 +202,47 @@ function createCardRow(card: Card): HTMLElement {
 
   detailsDiv.appendChild(last4Span);
   detailsDiv.appendChild(networkSpan);
+
+  // Check if this is a rotating category
+  const { isRotating } = getEffectiveRate(card, category);
+  if (isRotating) {
+    const rotatingBadge = document.createElement('span');
+    rotatingBadge.className = 'rotating-badge';
+    rotatingBadge.textContent = 'Q';
+    rotatingBadge.title = 'Rotating quarterly bonus';
+    detailsDiv.appendChild(rotatingBadge);
+  }
+
   infoDiv.appendChild(nicknameDiv);
   infoDiv.appendChild(detailsDiv);
 
-  // Annual fee section
-  const feeDiv = document.createElement('div');
-  feeDiv.className = 'card-fee';
-  const feeLabel = document.createElement('div');
-  feeLabel.textContent = 'Annual Fee';
-  const feeAmount = document.createElement('div');
-  feeAmount.className = 'card-fee-amount';
-  feeAmount.textContent = card.annualFee === 0 ? '$0' : `$${card.annualFee}`;
-  feeDiv.appendChild(feeLabel);
-  feeDiv.appendChild(feeAmount);
+  // Rate for selected category
+  const rateDiv = document.createElement('div');
+  rateDiv.className = 'card-rate';
 
-  // Due date section
-  const dueDiv = document.createElement('div');
-  dueDiv.className = 'card-due';
+  const { rate } = getEffectiveRate(card, category);
+  const ratePercent = (rate * 100).toFixed(1);
 
-  if (card.dueDay !== undefined) {
-    const dueInfo = getDueInfo(card.dueDay);
-    dueDiv.textContent = dueInfo.text;
-    if (dueInfo.soon) {
-      dueDiv.classList.add('soon');
-    }
-  } else {
-    dueDiv.textContent = '';
-  }
+  const rateValue = document.createElement('div');
+  rateValue.className = 'card-rate-value';
+  rateValue.textContent = `${ratePercent}%`;
+
+  const rateLabel = document.createElement('div');
+  rateLabel.className = 'card-rate-label';
+  rateLabel.textContent = 'earn';
+
+  rateDiv.appendChild(rateValue);
+  rateDiv.appendChild(rateLabel);
 
   row.appendChild(infoDiv);
-  row.appendChild(feeDiv);
-  row.appendChild(dueDiv);
+  row.appendChild(rateDiv);
 
-  // Click to open options page with card selected
+  // Click to open options page
   row.addEventListener('click', () => {
     void chrome.runtime.openOptionsPage();
   });
 
   return row;
-}
-
-function getDueInfo(dueDay: number): { text: string; soon: boolean } {
-  const today = new Date();
-  const currentDay = today.getDate();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-
-  // Calculate next due date
-  let dueDate: Date;
-  if (dueDay >= currentDay) {
-    dueDate = new Date(currentYear, currentMonth, dueDay);
-  } else {
-    dueDate = new Date(currentYear, currentMonth + 1, dueDay);
-  }
-
-  const diffTime = dueDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return { text: 'Due today', soon: true };
-  } else if (diffDays === 1) {
-    return { text: 'Due tomorrow', soon: true };
-  } else if (diffDays <= 7) {
-    return { text: `Due in ${diffDays}d`, soon: true };
-  } else {
-    return { text: `Due ${dueDay}${getOrdinalSuffix(dueDay)}`, soon: false };
-  }
-}
-
-function getOrdinalSuffix(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return s[(v - 20) % 10] ?? s[v] ?? s[0] ?? 'th';
 }
 
 // Initialize when DOM is ready

@@ -16,6 +16,7 @@
     <nav class="options-nav">
       <button class="nav-btn active" data-section="cards">Cards</button>
       <button class="nav-btn" data-section="calculator">Calculator</button>
+      <button class="nav-btn" data-section="eligibility">Eligibility</button>
       <button class="nav-btn" data-section="settings">Settings</button>
     </nav>
 
@@ -42,7 +43,148 @@
       <!-- Calculator Section (Phase 2) -->
       <section id="calculator-section" class="section hidden">
         <h2>Rewards Calculator</h2>
-        <p class="coming-soon">Coming in Phase 2</p>
+
+        <div class="calculator-container">
+          <div class="calc-input-section">
+            <div class="calc-form">
+              <div class="form-group">
+                <label for="calc-category">Spending Category</label>
+                <select id="calc-category">
+                  <option value="dining">Dining</option>
+                  <option value="grocery">Grocery</option>
+                  <option value="gas">Gas</option>
+                  <option value="travel_flights">Flights</option>
+                  <option value="travel_hotels">Hotels</option>
+                  <option value="travel_other">Other Travel</option>
+                  <option value="transit">Transit</option>
+                  <option value="streaming">Streaming</option>
+                  <option value="online_retail">Online Shopping</option>
+                  <option value="drugstore">Drugstore</option>
+                  <option value="utilities">Utilities</option>
+                  <option value="wholesale_club">Wholesale Club</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="calc-amount">Purchase Amount ($)</label>
+                <input type="number" id="calc-amount" min="0" step="0.01" value="100" placeholder="100.00">
+              </div>
+              <button type="button" id="calc-compare-btn" class="btn-primary">Compare Cards</button>
+            </div>
+          </div>
+
+          <div class="calc-results-section">
+            <h3>Best Cards for This Purchase</h3>
+            <div id="calc-results" class="calc-results">
+              <p class="calc-placeholder">Enter an amount and click Compare to see which card earns the most rewards.</p>
+            </div>
+          </div>
+
+          <div id="calc-no-cards" class="empty-state hidden">
+            <div class="empty-icon">🔢</div>
+            <h3>No cards to compare</h3>
+            <p>Add some cards first to use the rewards calculator.</p>
+          </div>
+        </div>
+
+        <!-- Signup Bonus Tracker -->
+        <div class="bonus-tracker-section">
+          <h3>Signup Bonus Progress</h3>
+          <div id="bonus-tracker" class="bonus-tracker">
+            <p class="calc-placeholder">Cards with active signup bonuses will appear here.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Eligibility Section (Phase 3) -->
+      <section id="eligibility-section" class="section hidden">
+        <h2>Issuer Eligibility</h2>
+        <p class="section-desc">Check if you're eligible for new cards based on issuer-specific rules.</p>
+
+        <div id="eligibility-grid" class="eligibility-grid">
+          <!-- Chase -->
+          <div class="eligibility-card" data-issuer="chase">
+            <div class="eligibility-header">
+              <span class="issuer-name">Chase</span>
+              <span class="eligibility-badge" id="chase-badge">Checking...</span>
+            </div>
+            <div class="eligibility-rule">5/24 Rule</div>
+            <div class="eligibility-status" id="chase-status">Loading...</div>
+            <div class="eligibility-detail" id="chase-detail"></div>
+          </div>
+
+          <!-- Amex -->
+          <div class="eligibility-card" data-issuer="amex">
+            <div class="eligibility-header">
+              <span class="issuer-name">American Express</span>
+              <span class="eligibility-badge" id="amex-badge">Checking...</span>
+            </div>
+            <div class="eligibility-rule">2/90 Rule</div>
+            <div class="eligibility-status" id="amex-status">Loading...</div>
+            <div class="eligibility-detail" id="amex-detail"></div>
+          </div>
+
+          <!-- Citi -->
+          <div class="eligibility-card" data-issuer="citi">
+            <div class="eligibility-header">
+              <span class="issuer-name">Citi</span>
+              <span class="eligibility-badge" id="citi-badge">Checking...</span>
+            </div>
+            <div class="eligibility-rule">8/65 Rule</div>
+            <div class="eligibility-status" id="citi-status">Loading...</div>
+            <div class="eligibility-detail" id="citi-detail"></div>
+          </div>
+
+          <!-- Bank of America -->
+          <div class="eligibility-card" data-issuer="boa">
+            <div class="eligibility-header">
+              <span class="issuer-name">Bank of America</span>
+              <span class="eligibility-badge" id="boa-badge">Checking...</span>
+            </div>
+            <div class="eligibility-rule">2/3/4 Rule</div>
+            <div class="eligibility-status" id="boa-status">Loading...</div>
+            <div class="eligibility-detail" id="boa-detail"></div>
+          </div>
+
+          <!-- Capital One -->
+          <div class="eligibility-card" data-issuer="capital_one">
+            <div class="eligibility-header">
+              <span class="issuer-name">Capital One</span>
+              <span class="eligibility-badge eligible" id="capital_one-badge">Eligible</span>
+            </div>
+            <div class="eligibility-rule">No specific rules</div>
+            <div class="eligibility-status" id="capital_one-status">No velocity limits tracked</div>
+            <div class="eligibility-detail" id="capital_one-detail"></div>
+          </div>
+
+          <!-- Discover -->
+          <div class="eligibility-card" data-issuer="discover">
+            <div class="eligibility-header">
+              <span class="issuer-name">Discover</span>
+              <span class="eligibility-badge eligible" id="discover-badge">Eligible</span>
+            </div>
+            <div class="eligibility-rule">No specific rules</div>
+            <div class="eligibility-status" id="discover-status">No velocity limits tracked</div>
+            <div class="eligibility-detail" id="discover-detail"></div>
+          </div>
+        </div>
+
+        <!-- Hard Inquiries Section -->
+        <div class="inquiries-section">
+          <div class="section-header">
+            <h3>Hard Inquiries</h3>
+            <button id="add-inquiry-btn" class="btn-secondary btn-sm">+ Add Inquiry</button>
+          </div>
+          <p class="section-desc">Track your credit inquiries. Required for Citi 8/65 rule checking.</p>
+
+          <div id="inquiries-list" class="inquiries-list">
+            <div class="loading">Loading inquiries...</div>
+          </div>
+
+          <div id="no-inquiries" class="empty-state-small hidden">
+            <p>No hard inquiries tracked yet.</p>
+          </div>
+        </div>
       </section>
 
       <!-- Settings Section -->
@@ -211,6 +353,34 @@
               <div id="category-rewards-list" class="category-list"></div>
               <button type="button" id="add-category-btn" class="btn-secondary btn-sm">+ Add Category</button>
             </div>
+
+            <div class="transfer-partners">
+              <label>Transfer Partners (Optional)</label>
+              <div id="transfer-partners-list" class="partner-list"></div>
+              <button type="button" id="add-partner-btn" class="btn-secondary btn-sm">+ Add Transfer Partner</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Signup Bonus (Optional)</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="bonusAmount">Bonus Amount (points/$)</label>
+                <input type="number" id="bonusAmount" name="bonusAmount" min="0" step="1" placeholder="60000">
+              </div>
+              <div class="form-group">
+                <label for="bonusMinSpend">Minimum Spend ($)</label>
+                <input type="number" id="bonusMinSpend" name="bonusMinSpend" min="0" step="100" placeholder="4000">
+              </div>
+              <div class="form-group">
+                <label for="bonusDeadline">Deadline</label>
+                <input type="date" id="bonusDeadline" name="bonusDeadline">
+              </div>
+              <div class="form-group">
+                <label for="bonusSpentToDate">Spent So Far ($)</label>
+                <input type="number" id="bonusSpentToDate" name="bonusSpentToDate" min="0" step="0.01" value="0">
+              </div>
+            </div>
           </div>
 
           <div class="form-section">
@@ -265,6 +435,75 @@
         <div class="modal-footer">
           <button class="btn-secondary modal-cancel">Cancel</button>
           <button id="confirm-clear-btn" class="btn-danger">Delete Everything</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Inquiry Modal -->
+    <div id="inquiry-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Add Hard Inquiry</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <form id="inquiry-form">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="inquiry-bureau">Credit Bureau *</label>
+              <select id="inquiry-bureau" name="bureau" required>
+                <option value="">Select bureau...</option>
+                <option value="experian">Experian</option>
+                <option value="equifax">Equifax</option>
+                <option value="transunion">TransUnion</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inquiry-issuer">Issuer *</label>
+              <select id="inquiry-issuer" name="issuer" required>
+                <option value="">Select issuer...</option>
+                <option value="chase">Chase</option>
+                <option value="amex">American Express</option>
+                <option value="citi">Citi</option>
+                <option value="capital_one">Capital One</option>
+                <option value="boa">Bank of America</option>
+                <option value="discover">Discover</option>
+                <option value="wells_fargo">Wells Fargo</option>
+                <option value="us_bank">US Bank</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inquiry-date">Date *</label>
+              <input type="date" id="inquiry-date" name="date" required>
+            </div>
+            <div class="form-group">
+              <label for="inquiry-product">Product Name (Optional)</label>
+              <input type="text" id="inquiry-product" name="productName" placeholder="e.g., Sapphire Preferred">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">Add Inquiry</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Inquiry Modal -->
+    <div id="delete-inquiry-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h2>Delete Inquiry</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this inquiry?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary modal-cancel">Cancel</button>
+          <button id="confirm-delete-inquiry-btn" class="btn-danger">Delete</button>
         </div>
       </div>
     </div>
