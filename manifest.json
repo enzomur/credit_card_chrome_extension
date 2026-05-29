@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "CardCompare",
-  "version": "0.1.0",
-  "description": "Privacy-first credit card portfolio management. Local-only data, zero telemetry.",
+  "version": "0.2.0",
+  "description": "AI-powered credit card rewards optimizer. Get personalized recommendations from Claude.",
   "permissions": [
     "storage"
+  ],
+  "host_permissions": [
+    "https://api.anthropic.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

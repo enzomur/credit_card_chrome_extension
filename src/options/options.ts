@@ -25,6 +25,11 @@ import {
   checkCiti865,
   checkBoA234,
 } from '@/lib/eligibility';
+import {
+  saveApiKey,
+  getApiKey,
+  testApiKey,
+} from '@/lib/ai';
 import type {
   Card,
   CardInput,
@@ -383,6 +388,71 @@ function setupSettings(): void {
 
   document.getElementById('clear-btn')?.addEventListener('click', () => {
     clearModal?.classList.remove('hidden');
+  });
+
+  // API Key handling
+  const apiKeyInput = document.getElementById('api-key') as HTMLInputElement | null;
+  const apiStatus = document.getElementById('api-status');
+
+  // Load existing API key (masked)
+  void getApiKey().then((key) => {
+    if (key && apiKeyInput) {
+      apiKeyInput.value = '••••••••••••' + key.slice(-4);
+      apiKeyInput.dataset['hasKey'] = 'true';
+    }
+  });
+
+  document.getElementById('save-api-key')?.addEventListener('click', () => {
+    if (!apiKeyInput || !apiStatus) return;
+
+    const key = apiKeyInput.value.trim();
+    if (!key || key.startsWith('••••')) {
+      apiStatus.textContent = 'Please enter a valid API key';
+      apiStatus.className = 'api-status error';
+      return;
+    }
+
+    void saveApiKey(key).then(() => {
+      apiStatus.textContent = 'API key saved!';
+      apiStatus.className = 'api-status success';
+      apiKeyInput.value = '••••••••••••' + key.slice(-4);
+      apiKeyInput.dataset['hasKey'] = 'true';
+    });
+  });
+
+  document.getElementById('test-api-key')?.addEventListener('click', () => {
+    if (!apiKeyInput || !apiStatus) return;
+
+    let keyToTest = apiKeyInput.value.trim();
+
+    // If masked, get actual key
+    if (keyToTest.startsWith('••••')) {
+      void getApiKey().then((actualKey) => {
+        if (actualKey) {
+          testConnection(actualKey, apiStatus);
+        } else {
+          apiStatus.textContent = 'No API key saved';
+          apiStatus.className = 'api-status error';
+        }
+      });
+    } else {
+      testConnection(keyToTest, apiStatus);
+    }
+  });
+}
+
+function testConnection(apiKey: string, statusEl: HTMLElement): void {
+  statusEl.textContent = 'Testing connection...';
+  statusEl.className = 'api-status';
+
+  void testApiKey(apiKey).then((result) => {
+    if (result.success) {
+      statusEl.textContent = 'Connected to Claude!';
+      statusEl.className = 'api-status success';
+    } else {
+      statusEl.textContent = result.error ?? 'Connection failed';
+      statusEl.className = 'api-status error';
+    }
   });
 }
 

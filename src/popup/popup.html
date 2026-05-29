@@ -14,50 +14,42 @@
     </header>
 
     <main class="popup-main">
-      <!-- Quick Compare Section -->
-      <div id="quick-compare-section" class="quick-compare-section">
-        <label for="category-select">Best card for:</label>
-        <select id="category-select">
-          <option value="dining">Dining</option>
-          <option value="grocery">Grocery</option>
-          <option value="gas">Gas</option>
-          <option value="travel_flights">Flights</option>
-          <option value="travel_hotels">Hotels</option>
-          <option value="travel_other">Other Travel</option>
-          <option value="transit">Transit</option>
-          <option value="streaming">Streaming</option>
-          <option value="online_retail">Online Shopping</option>
-          <option value="drugstore">Drugstore</option>
-          <option value="utilities">Utilities</option>
-          <option value="wholesale_club">Wholesale Club</option>
-          <option value="other">Other/General</option>
-        </select>
-
-        <div id="best-card-result" class="best-card-result">
-          <div class="best-card-placeholder">Select a category to see the best card</div>
+      <!-- AI Chat Section -->
+      <div id="ai-section" class="ai-section">
+        <div id="chat-messages" class="chat-messages">
+          <div class="ai-welcome">
+            <p>Ask me anything about your cards:</p>
+            <div class="quick-prompts">
+              <button class="quick-prompt" data-prompt="Which card should I use for dining?">Best for dining?</button>
+              <button class="quick-prompt" data-prompt="Which card should I use for groceries?">Best for groceries?</button>
+              <button class="quick-prompt" data-prompt="Analyze my card portfolio and suggest improvements">Analyze portfolio</button>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-container">
+          <input type="text" id="chat-input" placeholder="e.g., Best card for a $500 flight to Miami?" autocomplete="off">
+          <button id="send-btn" class="send-btn">
+            <span>&#10148;</span>
+          </button>
         </div>
       </div>
 
-      <!-- Cards List -->
-      <div class="cards-section">
-        <div class="cards-section-header">
-          <span>Your Cards</span>
-          <span id="card-count" class="card-count">0</span>
-        </div>
-        <div id="cards-summary" class="cards-summary">
-          <div class="loading">Loading cards...</div>
-        </div>
+      <!-- No API Key State -->
+      <div id="no-api-key" class="no-api-key hidden">
+        <p>Connect your Anthropic API key to get AI-powered recommendations.</p>
+        <button id="setup-api-key" class="btn-primary">Set Up API Key</button>
       </div>
 
-      <!-- Empty State -->
+      <!-- No Cards State -->
       <div id="empty-state" class="empty-state hidden">
-        <p>No cards added yet.</p>
+        <p>Add your credit cards to get started.</p>
         <button id="add-first-card" class="btn-primary">Add Your First Card</button>
       </div>
     </main>
 
     <footer class="popup-footer">
-      <button id="open-full-calculator" class="btn-secondary">Full Calculator</button>
+      <span id="card-count">0 cards</span>
+      <button id="view-cards" class="btn-link">View Cards</button>
     </footer>
   </div>
   <script type="module" src="popup.ts"></script>

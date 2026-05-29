@@ -362,6 +362,28 @@ body {
   border-left: 3px solid #ffc107;
 }
 
+/* API Status */
+.api-status {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.api-status:empty {
+  display: none;
+}
+
+.api-status.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.api-status.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
 /* Modal */
 .modal {
   position: fixed;

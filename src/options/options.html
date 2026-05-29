@@ -217,11 +217,26 @@
         </div>
 
         <div class="settings-group">
+          <h3>AI Assistant</h3>
+          <p class="setting-desc" style="margin-bottom: 12px;">Connect to Claude AI for personalized card recommendations and portfolio analysis.</p>
+          <div class="form-group">
+            <label for="api-key">Anthropic API Key</label>
+            <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+            <span class="form-hint">Get your API key from <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></span>
+          </div>
+          <div class="setting-row" style="margin-top: 12px;">
+            <button id="save-api-key" class="btn-primary">Save API Key</button>
+            <button id="test-api-key" class="btn-secondary" style="margin-left: 8px;">Test Connection</button>
+          </div>
+          <div id="api-status" class="api-status"></div>
+        </div>
+
+        <div class="settings-group">
           <h3>About</h3>
           <div class="about-info">
-            <p><strong>CardCompare</strong> v0.1.0</p>
-            <p>Privacy-first. All data stored locally on your device. Zero telemetry.</p>
-            <p class="security-note">⚠️ This extension only stores the last 4 digits of your card numbers. Full card numbers are never stored.</p>
+            <p><strong>CardCompare</strong> v0.2.0</p>
+            <p>AI-powered credit card optimization. Card data stored locally, AI queries sent to Claude.</p>
+            <p class="security-note">⚠️ Only reward structures are sent to AI - never full card numbers or sensitive data.</p>
           </div>
         </div>
       </section>
