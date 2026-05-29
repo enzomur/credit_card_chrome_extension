@@ -96,7 +96,7 @@ export interface Card {
   creditLimit?: number;
   statementDay?: number;
   dueDay?: number;
-  openedOn: string;
+  openedOn?: string;
   foreignTxFee: number;
   rewards: Rewards;
   signupBonus?: SignupBonus;

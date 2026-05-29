@@ -281,7 +281,10 @@ export function validateCard(card: Card | CardInput): ValidationResult {
   results.push(validateLast4(card.last4));
   results.push(validateNonNegativeNumber(card.annualFee, 'Annual fee'));
   results.push(validateNonNegativeNumber(card.aprPurchase, 'APR'));
-  results.push(validateIsoDate(card.openedOn));
+  // openedOn is optional - only validate if provided
+  if (card.openedOn !== undefined && card.openedOn !== '') {
+    results.push(validateIsoDate(card.openedOn));
+  }
   results.push(validatePercentage(card.foreignTxFee, 'Foreign transaction fee'));
   results.push(validateTextContent(card.notes, 'Notes'));
 

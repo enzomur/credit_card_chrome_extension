@@ -19,7 +19,10 @@ export function checkChase524(cards: Card[]): EligibilityResult {
   const cutoffDate = new Date();
   cutoffDate.setMonth(cutoffDate.getMonth() - 24);
 
-  const recentCards = cards.filter((card) => new Date(card.openedOn) >= cutoffDate);
+  // Only count cards with openedOn dates
+  const recentCards = cards.filter(
+    (card) => card.openedOn !== undefined && new Date(card.openedOn) >= cutoffDate
+  );
 
   if (recentCards.length >= 5) {
     return {
@@ -45,8 +48,9 @@ export function checkAmex290(cards: Card[]): EligibilityResult {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 90);
 
+  // Only count cards with openedOn dates
   const recentAmexCards = cards.filter(
-    (card) => card.issuer === 'amex' && new Date(card.openedOn) >= cutoffDate
+    (card) => card.issuer === 'amex' && card.openedOn !== undefined && new Date(card.openedOn) >= cutoffDate
   );
 
   if (recentAmexCards.length >= 2) {
@@ -145,8 +149,9 @@ export function checkBoA234(cards: Card[]): EligibilityResult {
   const cutoff12Months = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
 
   const boaCards = cards.filter((card) => card.issuer === 'boa');
-  const boaCardsLast2Months = boaCards.filter((card) => new Date(card.openedOn) >= cutoff2Months);
-  const boaCardsLast12Months = boaCards.filter((card) => new Date(card.openedOn) >= cutoff12Months);
+  // Only count cards with openedOn dates for time-based rules
+  const boaCardsLast2Months = boaCards.filter((card) => card.openedOn !== undefined && new Date(card.openedOn) >= cutoff2Months);
+  const boaCardsLast12Months = boaCards.filter((card) => card.openedOn !== undefined && new Date(card.openedOn) >= cutoff12Months);
 
   if (boaCardsLast2Months.length >= 2) {
     return {

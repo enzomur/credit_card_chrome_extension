@@ -550,7 +550,9 @@ function openCardModal(card?: Card): void {
     (document.getElementById('issuer') as HTMLSelectElement).value = card.issuer;
     (document.getElementById('network') as HTMLSelectElement).value = card.network;
     (document.getElementById('last4') as HTMLInputElement).value = card.last4;
-    (document.getElementById('openedOn') as HTMLInputElement).value = card.openedOn;
+    if (card.openedOn !== undefined) {
+      (document.getElementById('openedOn') as HTMLInputElement).value = card.openedOn;
+    }
     (document.getElementById('annualFee') as HTMLInputElement).value = String(card.annualFee);
     (document.getElementById('aprPurchase') as HTMLInputElement).value = String(card.aprPurchase);
     (document.getElementById('foreignTxFee') as HTMLInputElement).value = String(card.foreignTxFee);
@@ -792,13 +794,14 @@ async function saveCard(): Promise<void> {
   // Filter out invalid transfer partners (empty names)
   const validPartners = transferPartners.filter((p) => p.partner.trim() !== '');
 
+  const openedOnStr = formData.get('openedOn') as string;
+
   const cardInput: CardInput = {
     nickname: (formData.get('nickname') as string).trim(),
     productName: (formData.get('productName') as string).trim(),
     issuer: formData.get('issuer') as Issuer,
     network: formData.get('network') as Network,
     last4: formData.get('last4') as string,
-    openedOn: formData.get('openedOn') as string,
     annualFee: parseFloat(formData.get('annualFee') as string) || 0,
     aprPurchase: parseFloat(formData.get('aprPurchase') as string) || 0,
     foreignTxFee: parseFloat(formData.get('foreignTxFee') as string) || 0,
@@ -816,6 +819,9 @@ async function saveCard(): Promise<void> {
   }
 
   // Only add optional fields if they have values
+  if (openedOnStr !== '') {
+    cardInput.openedOn = openedOnStr;
+  }
   if (creditLimitStr !== '') {
     cardInput.creditLimit = parseFloat(creditLimitStr);
   }
